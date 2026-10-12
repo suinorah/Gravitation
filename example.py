@@ -25,13 +25,13 @@ for i in range (N):
             vecteurs[i][j] = (Pj - Pi)/distance(Pi,Pj)""" #essai avec boucle for des vecteurs pointant de i -> j
 
 #calcul des accelerations initiales 
-vecteurs = positions[:,np.newaxis,:] - positions[np.newaxis,:,:]
-distances = np.sqrt((vecteurs*vecteurs).sum(axis=2)) 
-distances[np.eye(N, dtype=bool)] = np.inf #on mets des infini sur la diagonale pour obtenir 0 qd on divise par la distance
-acc1 = vecteurs/(distances[:,:,np.newaxis]**2) # tableau des (Xi-Xj)/distance au carré entre i et j (sans le facteur masse)
+vecteurs = positions[:,np.newaxis,:] - positions[np.newaxis,:,:] # matrice de taille (N,N,2) de coordonnées (xi-xj,yi-yj)
+distances = np.sqrt((vecteurs*vecteurs).sum(axis=2)) # matrice de même taille de coord = aux distances entre les points Pi et Pj
+distances[np.eye(N, dtype=bool)] = np.inf #on mets des infini sur la diagonale pour obtenir 0 qd on divise par la distance (on a cherché sur Internet)
+acc1 = vecteurs/(distances[:,:,np.newaxis]**2) # tableau des (Xi-Xj)/ (distance au carré entre i et j) (sans le facteur masse)
 mass = masses.reshape(3,1) # pour braodcast lors du produit des masses avec acc1
-mass_carré = mass*np.ones((N,N))
-mass_carré[np.eye(N, dtype=bool)] = 0 
+mass_carré = mass*np.ones((N,N)) # matrice carrée 
+mass_carré[np.eye(N, dtype=bool)] = 0 # même matrice carrée mais avec des 0 sur la diagonale
 acc_avec_mass= acc1*(mass_carré[:,:,np.newaxis]) #broadcasting 
 accelerations = acc_avec_mass.sum(axis=1) # tableau des accélérations 
 
@@ -45,9 +45,9 @@ def get_new_position(position):
     global positions
     global accelerations
     vitesses = vitesses + accelerations*dt # on a les vitesses de chaque point à t_i+1
-    positions = positions+vitesses*dt
+    positions = positions + vitesses*dt  # implémentation d'Euler
 
-    #accelerations à t_i+1
+    #accelerations à t_i+1 (même procédure que le tableau accélérations à l'état inital mais avec des tableaux positions et vitesses ≠)
     vecteurs = positions[:,np.newaxis,:] - positions[np.newaxis,:,:]
     distances = np.sqrt((vecteurs*vecteurs).sum(axis=2)) 
     distances[np.eye(N, dtype=bool)] = np.inf #on mets des infini sur la diagonale pour obtenir 0 qd on divise par la distance
